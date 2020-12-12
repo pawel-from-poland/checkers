@@ -46,7 +46,7 @@ class Board:
         self.__draw_board()  # drawing board
         self.__draw_checkers()  # drawing checkers
         for move in valid_moves:
-            if move != [] and move != None:  # there's a move
+            if move:  # there's a move
                 # window, color, (x, y), radius
                 pygame.draw.circle(self.win, GREEN,
                                    (move[1] * self.square_width + self.square_width // 2,
@@ -116,7 +116,6 @@ class Board:
                 if move and len(move) >= 2:
                     new_moves = [[move[x], move[x + 1]]
                                  for x in range(0, len(move), 2)]
-
                     for new_move in new_moves:
                         new_valid_moves.append(new_move)
 
