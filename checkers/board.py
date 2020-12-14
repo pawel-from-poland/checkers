@@ -71,55 +71,53 @@ class Board:
             right = [row - 1, col +
                      1] if self.turn == 'white' else [row + 1, col + 1]  # selects right item of the ckecker
             try:
-                if self.board[right[0]][right[1]] == 0:  # here left item is empty
-                    if next_ and self.turn not in str(self.board[right[0] + (-1 if self.turn == 'white' else 1)][right[1] + 1]) and self.board[right[0] + (-1 if self.turn == 'white' else 1)][right[1] + 1]:
-                        right_moves, left_moves = self.__traverse_right(self.board[right[0] + (-1 if self.turn == 'white' else 1)][right[1] + 1], right[0] + (-1 if self.turn == 'white' else 1), right[1] + 1), self.__traverse_left(
-                            self.board[right[0] + (-1 if self.turn == 'white' else 1)][right[1] + 1], right[0] + (-1 if self.turn == 'white' else 1), right[1] + 1)
-                        return right + (right_moves + left_moves if right_moves and left_moves else (right_moves if right_moves else (left_moves if left_moves else right)))
-                    return right  # returns right item of the ckecker
-                # searching for further moves
-                elif self.board[right[0]][right[1]] != self.turn:
-                    return self.__traverse_right(self.board[right[0]][right[1]], right[0], right[1], True)
+                if not self.board[right[0]][right[1]]:
+                    if next_:
+                        right_captures = self.__traverse_right(
+                            item, *right)
+                        left_captures = self.__traverse_left(item, *right)
+                        return left_captures + right_captures + right if left_captures and right_captures else right + left_captures if left_captures else right + right_captures if right_captures else right
+                    return right
+                elif item != self.board[right[0]][right[1]] and not next_:
+                    return self.__traverse_right(item, *right, True)
 
             except IndexError:  # there's no right item coz it's outta the board
-                return  # escapes the function
+                return
 
     # same as __traverse_right() but on left side lol
     def __traverse_left(self, item, row, col, next_=False):
-        if self.turn in str(item) or next_:
+        if self.turn in str(item):
             left = [row - 1, col -
                     1] if self.turn == 'white' else [row + 1, col - 1]
             try:
-                if self.board[left[0]][left[1]] == 0:
-                    if next_ and self.turn not in str(self.board[left[0] + (-1 if self.turn == 'white' else 1)][left[1] - 1]) and self.board[left[0] + (-1 if self.turn == 'white' else 1)][left[1] - 1]:
-                        right_moves, left_moves = self.__traverse_right(self.board[left[0] + (-1 if self.turn == 'white' else 1)][left[1] - 1], left[0] + (-1 if self.turn == 'white' else 1), left[1] - 1), self.__traverse_left(
-                            self.board[left[0] + (-1 if self.turn == 'white' else 1)][left[1] - 1], left[0] + (-1 if self.turn == 'white' else 1), left[1] - 1)
-                        return right_moves + left_moves + left if right_moves and left_moves else (left_moves + left if left_moves else (right_moves + left if right_moves else left))
+                if not self.board[left[0]][left[1]]:
+                    if next_:
+                        left_captures = self.__traverse_left(item, *left)
+                        right_captures = self.__traverse_right(item, *left)
+                        return left_captures + right_captures + left if left_captures and right_captures else left + left_captures if left_captures else left + right_captures if right_captures else left
                     return left
-                # searching for further moves
-                elif self.board[left[0]][left[1]] != self.turn and not next_:
-                    return self.__traverse_left(self.board[left[0]][left[1]], left[0], left[1], True)
+                elif item != self.board[left[0]][left[1]] and not next_:
+                    return self.__traverse_left(item, *left, True)
             except IndexError:
                 return
 
     def get_valid_moves(self, item, row, col):  # gets checker's valid moves
         valid_moves = [self.__traverse_right(
             item, row, col), self.__traverse_left(item, row, col)]  # valid moves of the ckecker
-        self.__draw_moves(valid_moves)  # draws moves
-        return valid_moves
+        new_valid_moves = []
+        for move in valid_moves:
+            if move and len(move) >= 2:
+                new_moves = [[move[x], move[x + 1]]
+                             for x in range(0, len(move), 2)]
+                for new_move in new_moves:
+                    new_valid_moves.append(new_move)
+        self.__draw_moves(new_valid_moves)  # draws moves
+        return new_valid_moves
 
     def move(self, selected_row, selected_col, new_row, new_col, valid_moves):
         self.selected = False  # nothing's selected now
         if valid_moves:  # there are valid moves of the ckecker
-            new_valid_moves = []
-            for move in valid_moves:
-                if move and len(move) >= 2:
-                    new_moves = [[move[x], move[x + 1]]
-                                 for x in range(0, len(move), 2)]
-                    for new_move in new_moves:
-                        new_valid_moves.append(new_move)
-
-            if [new_row, new_col] in new_valid_moves:  # there move chosen by player is valid
+            if [new_row, new_col] in valid_moves:  # there move chosen by player is valid
                 self.turn = 'white' if self.turn == 'black' else 'black'  # switches self.turn
                 self.board[selected_row][selected_col], self.board[new_row][
                     new_col] = self.board[new_row][new_col], self.board[selected_row][selected_col]  # switches two selected items
