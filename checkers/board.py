@@ -67,12 +67,12 @@ class Board:
 
     # returns move on right side of checker
     def __traverse_right(self, item, row, col, next_=False):
-        if self.turn in str(item) or next_:  # here valid checker's selected
+        if self.turn in str(item):  # here valid checker's selected
             right = [row - 1, col +
                      1] if self.turn == 'white' else [row + 1, col + 1]  # selects right item of the ckecker
             try:
                 if not self.board[right[0]][right[1]]:
-                    if next_:
+                    if next_ and self.board[row][col]:
                         right_captures = self.__traverse_right(
                             item, *right)
                         left_captures = self.__traverse_left(item, *right)
@@ -91,7 +91,7 @@ class Board:
                     1] if self.turn == 'white' else [row + 1, col - 1]
             try:
                 if not self.board[left[0]][left[1]]:
-                    if next_:
+                    if next_ and self.board[row][col]:
                         left_captures = self.__traverse_left(item, *left)
                         right_captures = self.__traverse_right(item, *left)
                         return left_captures + right_captures + left if left_captures and right_captures else left + left_captures if left_captures else left + right_captures if right_captures else left
